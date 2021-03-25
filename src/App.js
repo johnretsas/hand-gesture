@@ -18,18 +18,13 @@ import { drawHand } from "./utilities";
 
 ///////// NEW STUFF IMPORTS
 import * as fp from "fingerpose";
-import victory from "./victory.png";
-import thumbs_up from "./thumbs_up.png";
 ///////// NEW STUFF IMPORTS
+import PointRightGesture from "./PointRight";
+import PointLeftGesture from "./PointLeft";
 
 function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
-
-  ///////// NEW STUFF ADDED STATE HOOK
-  const [emoji, setEmoji] = useState(null);
-  const images = { thumbs_up: thumbs_up, victory: victory };
-  ///////// NEW STUFF ADDED STATE HOOK
 
   const runHandpose = async () => {
     const net = await handpose.load();
@@ -62,18 +57,16 @@ function App() {
 
       // Make Detections
       const hand = await net.estimateHands(video);
-      // console.log(hand);
-
       ///////// NEW STUFF ADDED GESTURE HANDLING
 
       if (hand.length > 0) {
         const GE = new fp.GestureEstimator([
-          fp.Gestures.VictoryGesture,
-          fp.Gestures.ThumbsUpGesture,
+          PointRightGesture,
+          PointLeftGesture
         ]);
         const gesture = await GE.estimate(hand[0].landmarks, 4);
+
         if (gesture.gestures !== undefined && gesture.gestures.length > 0) {
-          // console.log(gesture.gestures);
 
           const confidence = gesture.gestures.map(
             (prediction) => prediction.confidence
@@ -81,9 +74,8 @@ function App() {
           const maxConfidence = confidence.indexOf(
             Math.max.apply(null, confidence)
           );
-          // console.log(gesture.gestures[maxConfidence].name);
-          setEmoji(gesture.gestures[maxConfidence].name);
-          console.log(emoji);
+          console.log(gesture.gestures[maxConfidence].name);
+          // setEmoji(gesture.gestures[maxConfidence].name);
         }
       }
 
@@ -95,8 +87,9 @@ function App() {
     }
   };
 
-  useEffect(()=>{runHandpose()},[]);
-
+  useEffect(() => { runHandpose() }, []);
+  const WIDTH = 320;
+  const HEIGHT = 240;
   return (
     <div className="App">
       <header className="App-header">
@@ -106,12 +99,12 @@ function App() {
             position: "absolute",
             marginLeft: "auto",
             marginRight: "auto",
-            left: 0,
             right: 0,
+            bottom: 0,
             textAlign: "center",
-            zindex: 9,
-            width: 640,
-            height: 480,
+            zindex: 8,
+            width: WIDTH,
+            height: HEIGHT,
           }}
         />
 
@@ -121,34 +114,14 @@ function App() {
             position: "absolute",
             marginLeft: "auto",
             marginRight: "auto",
-            left: 0,
             right: 0,
+            bottom: 0,
             textAlign: "center",
             zindex: 9,
-            width: 640,
-            height: 480,
+            width: WIDTH,
+            height: HEIGHT,
           }}
         />
-        {/* NEW STUFF */}
-        {emoji !== null ? (
-          <img
-            src={images[emoji]}
-            style={{
-              position: "absolute",
-              marginLeft: "auto",
-              marginRight: "auto",
-              left: 400,
-              bottom: 500,
-              right: 0,
-              textAlign: "center",
-              height: 100,
-            }}
-          />
-        ) : (
-          ""
-        )}
-
-        {/* NEW STUFF */}
       </header>
     </div>
   );
