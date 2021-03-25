@@ -25,6 +25,7 @@ import PointLeftGesture from "./PointLeft";
 function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
+  console.log("init")
 
   const runHandpose = async () => {
     const net = await handpose.load();
