@@ -19,13 +19,16 @@ import { drawHand } from "./utilities";
 ///////// NEW STUFF IMPORTS
 import * as fp from "fingerpose";
 ///////// NEW STUFF IMPORTS
-import PointRightGesture from "./PointRight";
-import PointLeftGesture from "./PointLeft";
+import PointUpRightGesture from "./PointUpRight";
+import PointDownRightGesture from "./PointDownRight";
+import PointUpLeftGesture from "./PointUpLeft";
+import PointDownLeftGesture from "./PointDownLeft";
+import GoalPost from "./GoalPost";
 
 function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
-  console.log("init")
+  const [direction, setDirection] = useState('');
 
   const runHandpose = async () => {
     const net = await handpose.load();
@@ -62,8 +65,10 @@ function App() {
 
       if (hand.length > 0) {
         const GE = new fp.GestureEstimator([
-          PointRightGesture,
-          PointLeftGesture
+          PointDownRightGesture,
+          PointUpRightGesture,
+          PointUpLeftGesture,
+          PointDownLeftGesture
         ]);
         const gesture = await GE.estimate(hand[0].landmarks, 4);
 
@@ -75,7 +80,7 @@ function App() {
           const maxConfidence = confidence.indexOf(
             Math.max.apply(null, confidence)
           );
-          console.log(gesture.gestures[maxConfidence].name);
+          setDirection(gesture.gestures[maxConfidence].name)
           // setEmoji(gesture.gestures[maxConfidence].name);
         }
       }
@@ -91,17 +96,19 @@ function App() {
   useEffect(() => { runHandpose() }, []);
   const WIDTH = 320;
   const HEIGHT = 240;
+  const POSITION = {
+    right: 0,
+  }
   return (
     <div className="App">
-      <header className="App-header">
+      <header className="App-header" style={{ height: HEIGHT }}>
         <Webcam
           ref={webcamRef}
           style={{
             position: "absolute",
             marginLeft: "auto",
             marginRight: "auto",
-            right: 0,
-            bottom: 0,
+            ...POSITION,
             textAlign: "center",
             zindex: 8,
             width: WIDTH,
@@ -115,14 +122,24 @@ function App() {
             position: "absolute",
             marginLeft: "auto",
             marginRight: "auto",
-            right: 0,
-            bottom: 0,
+            ...POSITION,
             textAlign: "center",
             zindex: 9,
             width: WIDTH,
             height: HEIGHT,
           }}
         />
+        <div style={{ fontSize: 40, flex: 1, display: 'flex', justifyContent: 'space-around' }}>
+          <div 
+            id='users-choice' 
+            style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {direction}
+          </div>
+          <div style={{ width: '50%' }}>
+            <GoalPost direction={direction}/>
+          </div>
+        </div>
+        <div style={{ width: WIDTH }}></div>
       </header>
     </div>
   );
